@@ -1,0 +1,494 @@
+{
+  "name": "SemanticModel",
+  "compatibilityLevel": 1600,
+  "model": {
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "SQL/62 3 41 192;SaleDB",
+        "connectionDetails": {
+          "protocol": "tds",
+          "address": {
+            "server": "62.3.41.192",
+            "database": "SaleDB"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "UsernamePassword",
+          "kind": "SQL",
+          "path": "62.3.41.192;SaleDB",
+          "Username": "A_Bakhtiari",
+          "EncryptConnection": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "vw_SaleDB_MedicineDistribution",
+        "columns": [
+          {
+            "name": "factorDate",
+            "dataType": "string",
+            "sourceColumn": "factorDate"
+          },
+          {
+            "name": "goodsname",
+            "dataType": "string",
+            "sourceColumn": "goodsname"
+          },
+          {
+            "name": "existance",
+            "dataType": "double",
+            "sourceColumn": "existance"
+          },
+          {
+            "name": "factorcount",
+            "dataType": "double",
+            "sourceColumn": "factorcount"
+          },
+          {
+            "name": "companyname",
+            "dataType": "string",
+            "sourceColumn": "companyname"
+          },
+          {
+            "name": "cityName",
+            "dataType": "string",
+            "sourceColumn": "cityName"
+          },
+          {
+            "name": "jmonthN",
+            "dataType": "double",
+            "sourceColumn": "jmonthN"
+          },
+          {
+            "name": "jmonthT",
+            "dataType": "string",
+            "sourceColumn": "jmonthT"
+          },
+          {
+            "name": "ColorCode",
+            "dataType": "string",
+            "sourceColumn": "ColorCode"
+          },
+          {
+            "name": "ProvinceName",
+            "dataType": "string",
+            "sourceColumn": "ProvinceName"
+          },
+          {
+            "name": "MonthTarget",
+            "dataType": "double",
+            "sourceColumn": "MonthTarget"
+          },
+          {
+            "name": "month",
+            "dataType": "double",
+            "sourceColumn": "month"
+          },
+          {
+            "name": "salecentersname",
+            "dataType": "string",
+            "sourceColumn": "salecentersname"
+          },
+          {
+            "type": "calculated",
+            "name": "KeyDimTarget",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": "vw_SaleDB_MedicineDistribution[salecentersname] & \"_\" & vw_SaleDB_MedicineDistribution[month]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/62 3 41 192;SaleDB\",",
+                "    dbo_vw_SaleDB_MedicineDistribution = Source{[Schema=\"dbo\",Item=\"vw_SaleDB_MedicineDistribution\"]}[Data]",
+                "in",
+                "    dbo_vw_SaleDB_MedicineDistribution"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "TotalFactorCount",
+            "expression": " SUM(vw_SaleDB_MedicineDistribution[factorcount])"
+          }
+        ]
+      },
+      {
+        "name": "DimSaleCenters",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "salecentersname",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[salecentersname]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "TotalFactorCount",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[TotalFactorCount]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "TotalTarget",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[TotalTarget]"
+          },
+          {
+            "type": "calculated",
+            "name": "AchievementRate",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": [
+              "",
+              "FORMAT(",
+              "DIVIDE([TotalFactorCount], DimSaleCenters[TotalTarget], 0),",
+              "\"0.00%\"",
+              ")"
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 2",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "",
+                "SUMMARIZE(",
+                "     FILTER(",
+                "     vw_SaleDB_MedicineDistribution,",
+                "     NOT(ISBLANK(vw_SaleDB_MedicineDistribution[salecentersname]))",
+                "     ),",
+                "     vw_SaleDB_MedicineDistribution[salecentersname],",
+                "     \"TotalFactorCount\", SUM(vw_SaleDB_MedicineDistribution[factorcount]),",
+                "     \"TotalTarget\", SUMX(",
+                "    SUMMARIZE(",
+                "        vw_SaleDB_MedicineDistribution,",
+                "        vw_SaleDB_MedicineDistribution[salecentersname],",
+                "        vw_SaleDB_MedicineDistribution[month],",
+                "        \"UniqueMonthTarget\", MAX(vw_SaleDB_MedicineDistribution[MonthTarget])",
+                "    ),",
+                "    [UniqueMonthTarget]",
+                "))"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "نرخ موفقیت داروسازی نوین",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "SELECTEDVALUE(DimSaleCenters[AchievementRate]),",
+              "DimSaleCenters[salecentersname] = \"داروسازی نوین\")"
+            ]
+          },
+          {
+            "name": "نرخ موفقیت زیست دارو آوا",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "SELECTEDVALUE(DimSaleCenters[AchievementRate]),",
+              "DimSaleCenters[salecentersname] = \"زیست دارو آوا\")"
+            ]
+          },
+          {
+            "name": "نرخ موفقیت گسترش داروی ایران",
+            "expression": [
+              "",
+              "CALCULATE(",
+              "SELECTEDVALUE(DimSaleCenters[AchievementRate]),",
+              "DimSaleCenters[salecentersname] = \"گسترش داروی ایران\")"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "DimCompany",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "companyname",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[companyname]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "TotalFactorCount",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[TotalFactorCount]"
+          },
+          {
+            "type": "calculated",
+            "name": "LogoURL",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": [
+              " ",
+              "SWITCH(",
+              "    TRUE(),",
+              "    [companyname] = \"البرز\", \"https://i.postimg.cc/QK5t14gP/image.jpg\",",
+              "    [companyname] = \"بهستان\", \"https://i.postimg.cc/rKXzMTML/image.jpg\",",
+              "    [companyname] = \"پخش دایا\", \"https://i.postimg.cc/0M4MpKT6/image.jpg\",",
+              "    [companyname] = \"پخش رازی\", \"https://i.postimg.cc/9zvw0TPK/image.jpg\",",
+              "    [companyname] = \"سها\", \"https://i.postimg.cc/HVXcyxBx/image.jpg\",",
+              "    [companyname] = \"فردوس\", \"https://i.postimg.cc/VJwSB8VF/image.jpg\",",
+              "    [companyname] = \"قاسم\", \"https://i.postimg.cc/Wd7d5yRc/image.jpg\",",
+              "    [companyname] = \"ممتاز\", \"https://i.postimg.cc/ftVkTTVM/image.jpg\",",
+              "    [companyname] = \"هجرت\", \"https://i.postimg.cc/KkCjKSTB/image.jpg\",",
+              "    BLANK())"
+            ],
+            "dataCategory": "ImageUrl"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "SUMMARIZE(",
+                "vw_SaleDB_MedicineDistribution,",
+                "vw_SaleDB_MedicineDistribution[companyname],",
+                "\"TotalFactorCount\", SUM(vw_SaleDB_MedicineDistribution[factorcount]))"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "DimCity",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "cityName",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[cityName]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "TotalFactorCount",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[TotalFactorCount]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "ProvinceName",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[ProvinceName]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "",
+                "SUMMARIZE(",
+                "FILTER(",
+                "vw_SaleDB_MedicineDistribution,",
+                "NOT(ISBLANK(vw_SaleDB_MedicineDistribution[cityName]))",
+                "),",
+                "vw_SaleDB_MedicineDistribution[ProvinceName],",
+                "vw_SaleDB_MedicineDistribution[cityName],",
+                "\"TotalFactorCount\", SUM(vw_SaleDB_MedicineDistribution[factorcount]))"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "DimGoods",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "goodsname",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[goodsname]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "TotalFactorCount",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[TotalFactorCount]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "",
+                "SUMMARIZE(",
+                "FILTER(",
+                "vw_SaleDB_MedicineDistribution,",
+                "NOT(ISBLANK(vw_SaleDB_MedicineDistribution[goodsname]))",
+                "),",
+                "vw_SaleDB_MedicineDistribution[goodsname],",
+                "\"TotalFactorCount\", SUM(vw_SaleDB_MedicineDistribution[factorcount]))"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "DimTarget",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "month",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[month]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "Target",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Target]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "salecentersname",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "vw_SaleDB_MedicineDistribution[salecentersname]"
+          },
+          {
+            "type": "calculated",
+            "name": "Key",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": "DimTarget[salecentersname] & \"_\" & DimTarget[month]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "FactorCount",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[FactorCount]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "SUMMARIZE(",
+                "FILTER(",
+                "     vw_SaleDB_MedicineDistribution,",
+                "     NOT(ISBLANK(vw_SaleDB_MedicineDistribution[salecentersname]))",
+                "     ),",
+                "vw_SaleDB_MedicineDistribution[salecentersname],",
+                "vw_SaleDB_MedicineDistribution[month],",
+                "\"Target\", MAX(vw_SaleDB_MedicineDistribution[MonthTarget]),",
+                "\"FactorCount\", SUM(vw_SaleDB_MedicineDistribution[factorcount]))"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "AchievementRate2",
+            "expression": [
+              " ",
+              "FORMAT(",
+              "DIVIDE(SUM(DimTarget[FactorCount]), SUM(DimTarget[Target]), 0),",
+              "\"0.00%\"",
+              ")"
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "1832e19a-e158-40ab-b9ad-39d077cd26b7",
+        "fromTable": "vw_SaleDB_MedicineDistribution",
+        "fromColumn": "goodsname",
+        "toTable": "DimGoods",
+        "toColumn": "goodsname"
+      },
+      {
+        "name": "efec8046-7898-4f27-b81f-24d04ab2c54f",
+        "fromTable": "vw_SaleDB_MedicineDistribution",
+        "fromColumn": "companyname",
+        "toTable": "DimCompany",
+        "toColumn": "companyname",
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "8333020d-6b3b-457e-81f2-578baacd60ff",
+        "fromTable": "vw_SaleDB_MedicineDistribution",
+        "fromColumn": "cityName",
+        "toTable": "DimCity",
+        "toColumn": "cityName",
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "fd39657f-88b5-4160-8eee-e68ffb91570d",
+        "fromTable": "vw_SaleDB_MedicineDistribution",
+        "fromColumn": "salecentersname",
+        "toTable": "DimSaleCenters",
+        "toColumn": "salecentersname"
+      },
+      {
+        "name": "6204d2a0-7105-427a-9411-5c7a700df615",
+        "fromTable": "vw_SaleDB_MedicineDistribution",
+        "fromColumn": "KeyDimTarget",
+        "toTable": "DimTarget",
+        "toColumn": "Key",
+        "crossFilteringBehavior": "bothDirections"
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "700"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}

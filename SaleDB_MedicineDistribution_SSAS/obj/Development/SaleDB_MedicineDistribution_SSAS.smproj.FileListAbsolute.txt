@@ -1,0 +1,8 @@
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\bin\Model.asdatabase
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\bin\Model.deploymenttargets
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\bin\Model.deploymentoptions
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\obj\Development\SaleDB_MedicineDistribution_SSAS.smproj.AssemblyReference.cache
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\obj\Development\SaleDB_MedicineDistribution_SSAS.smproj.CoreCompileInputs.cache
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\obj\Development\Model.asdatabase
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\obj\Development\Model.deploymentoptions
+F:\dev-maktab\تمرین پنجشنبه12\SaleDB_MedicineDistribution_SSAS\obj\Development\Model.deploymenttargets
